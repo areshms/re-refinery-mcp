@@ -1,0 +1,19 @@
+[project]
+name = "re-refinery-mcp"
+version = "1.0.0"
+description = "MCP server for the RE Data Refinery — scored Columbus, OH real estate data with x402 micropayments."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp<2",
+    "python-dotenv>=1.2.3",
+    "scrapling[fetchers]>=0.4.15",
+    "x402[evm,httpx]>=2.20.0",
+]
+
+[project.scripts]
+re-refinery-mcp = "re_refinery_mcp:main"
+
+[tool.setuptools]
+py-modules = ["re_refinery_mcp"]
