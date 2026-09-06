@@ -63,6 +63,41 @@ uv run python re_refinery_mcp.py
 uv run python re_refinery_mcp.py --transport sse
 ```
 
+## MCP Configuration
+
+Add to your MCP client config (Claude Desktop `claude_desktop_config.json`, Cursor, etc.):
+
+```json
+{
+  "mcpServers": {
+    "re-refinery-mcp": {
+      "command": "uv",
+      "args": ["run", "python", "re_refinery_mcp.py"],
+      "cwd": "/path/to/re-refinery-mcp"
+    }
+  }
+}
+```
+
+### Claude Desktop
+
+```json
+{
+  "mcpServers": {
+    "re-refinery-mcp": {
+      "command": "uv",
+      "args": ["run", "python", "re_refinery_mcp.py"],
+      "cwd": "/path/to/re-refinery-mcp",
+      "env": {
+        "REFINERY_BASE_URL": "https://re-data-refinery.ares-hms.workers.dev",
+        "REFINERY_ENABLE_X402": "true",
+        "EVM_PRIVATE_KEY": "0x..."
+      }
+    }
+  }
+}
+```
+
 ## Test with MCP Inspector
 
 ```bash
