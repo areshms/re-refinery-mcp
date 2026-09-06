@@ -1,31 +1,44 @@
 # RE Data Refinery MCP Server
 
-MCP server that lets AI agents query the [RE Data Refinery](https://re-data-refinery.ares-hms.workers.dev) for scored Columbus, OH real estate data and pay per lookup via the x402 protocol.
+An MCP (Model Context Protocol) server that gives AI agents real-time access to scored real estate investment data for Columbus, Ohio — including property listings, flip/wholesale scores, rental yields, foreclosure auctions, and tax sale listings. Agents query the data through MCP tools and pay per lookup using x402 micropayments (USDC on Base mainnet).
 
-## What it does
+## What It Does
 
-- Exposes refinery endpoints as MCP tools (`refinery_*`).
-- Routes paid lookups through the x402-enabled Cloudflare Worker.
-- Supports automatic USDC-on-Base micropayments when `EVM_PRIVATE_KEY` is set.
-- Falls back to the free local API (`localhost:5004`) when `REFINERY_ENABLE_X402=false`.
+This server exposes 13 MCP tools that let any AI agent (Claude, Cursor, Hermes, etc.):
+
+- **Search property listings** — query 184+ scored Columbus, OH properties with flip scores, wholesale scores, rental yield percentages, market heat ratings, and neighborhood comparisons
+- **Get property details** — full property records by ZPID including price history, tax/assessment history, and school ratings
+- **Search foreclosure auctions** — 192 Franklin County foreclosure listings with auction dates, addresses, sale status, and lot sizes (sourced from PropertyOnion, refreshed daily)
+- **Search tax sale auctions** — 161 Franklin County tax sale listings with the same structure
+- **Query combined auctions** — all 353 auction listings in one call, filterable by city, ZIP, status, or type
+
+All paid lookups use the **x402 protocol** — agents send USDC micropayments on Base mainnet ($0.15–$0.50 per query) and receive data in response. No subscription, no API key — just pay per query via crypto.
+
+## Data Sources
+
+| Source | Data | Coverage |
+|--------|------|----------|
+| ZillAPI | Property listings, scores, price/tax/school history | 184 Columbus, OH properties |
+| PropertyOnion | Foreclosure + tax sale auction listings | 353 Franklin County listings (daily refresh) |
+| Franklin County GIS | Tax delinquency, permits, zoning | Enrichment layer (ongoing) |
 
 ## Tools
 
-| Tool | Endpoint | Price |
-|------|----------|-------|
-| `refinery_health` | `GET /health` | Free |
-| `refinery_cache_stats` | `GET /cache/stats` | Free |
-| `refinery_credits` | `GET /credits` | Free |
-| `refinery_search_properties` | `GET /search` | $0.50 |
-| `refinery_list_properties` | `GET /properties` | $0.35 (live) / free (cached) |
-| `refinery_get_property` | `GET /properties/{zpid}` | $0.35 |
-| `refinery_get_price_history` | `GET /properties/{zpid}/price-history` | $0.25 |
-| `refinery_get_tax_history` | `GET /properties/{zpid}/tax-history` | $0.25 |
-| `refinery_get_schools` | `GET /properties/{zpid}/schools` | $0.25 |
-| `refinery_search_foreclosures` | `GET /foreclosures` | $0.15 |
-| `refinery_search_tax_sales` | `GET /tax-sales` | $0.15 |
-| `refinery_search_auctions` | `GET /auctions` | $0.25 |
-| `refinery_payment_status` | (status) | Free |
+| Tool | What It Returns | Price |
+|------|-----------------|-------|
+| `refinery_health` | API status + cached property count | Free |
+| `refinery_cache_stats` | Cache freshness + neighborhood count | Free |
+| `refinery_credits` | ZillAPI credit balance | Free |
+| `refinery_search_properties` | Property search results with scores | $0.50 |
+| `refinery_list_properties` | All cached properties with flip/wholesale/rental scores | $0.35 |
+| `refinery_get_property` | Full property detail by ZPID | $0.35 |
+| `refinery_get_price_history` | Price history for a property | $0.25 |
+| `refinery_get_tax_history` | Tax/assessment history for a property | $0.25 |
+| `refinery_get_schools` | School ratings near a property | $0.25 |
+| `refinery_search_foreclosures` | 192 foreclosure auction listings | $0.15 |
+| `refinery_search_tax_sales` | 161 tax sale auction listings | $0.15 |
+| `refinery_search_auctions` | All 353 auction listings combined | $0.25 |
+| `refinery_payment_status` | x402 payment configuration status | Free |
 
 ## Setup
 
