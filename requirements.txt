@@ -1,0 +1,4 @@
+httpx>=0.28.1
+mcp<2
+python-dotenv>=1.2.3
+x402[evm,httpx]>=2.20.0
