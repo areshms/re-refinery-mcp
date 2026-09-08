@@ -1,12 +1,12 @@
 # RE Data Refinery MCP Server
 
-An MCP (Model Context Protocol) server that gives AI agents real-time access to scored real estate investment data for Columbus, Ohio — including property listings, flip/wholesale scores, rental yields, foreclosure auctions, and tax sale listings. Agents query the data through MCP tools and pay per lookup using x402 micropayments (USDC on Base mainnet).
+An MCP (Model Context Protocol) server that gives AI agents real-time access to scored real estate investment data across five major Ohio cities — Columbus, Cincinnati, Toledo, Dayton, and Cleveland — including property listings, flip/wholesale scores, rental yields, foreclosure auctions, and tax sale listings. Agents query the data through MCP tools and pay per lookup using x402 micropayments (USDC on Base mainnet).
 
 ## What It Does
 
 This server exposes 13 MCP tools that let any AI agent (Claude, Cursor, Hermes, etc.):
 
-- **Search property listings** — query 184+ scored Columbus, OH properties with flip scores, wholesale scores, rental yield percentages, market heat ratings, and neighborhood comparisons
+- **Search property listings** — query 1,040+ scored Ohio properties with flip scores, wholesale scores, rental yield percentages, market heat ratings, and neighborhood comparisons. Filter by city, ZIP, price range, score threshold, or property type
 - **Get property details** — full property records by ZPID including price history, tax/assessment history, and school ratings
 - **Search foreclosure auctions** — 192 Franklin County foreclosure listings with auction dates, addresses, sale status, and lot sizes (sourced from PropertyOnion, refreshed daily)
 - **Search tax sale auctions** — 161 Franklin County tax sale listings with the same structure
@@ -18,18 +18,29 @@ All paid lookups use the **x402 protocol** — agents send USDC micropayments on
 
 | Source | Data | Coverage |
 |--------|------|----------|
-| ZillAPI | Property listings, scores, price/tax/school history | 184 Columbus, OH properties |
+| ZillAPI | Property listings, scores, price/tax/school history | 1,040 scored properties across Columbus, Cincinnati, Toledo, Dayton, and Cleveland |
 | PropertyOnion | Foreclosure + tax sale auction listings | 353 Franklin County listings (daily refresh) |
 | Franklin County GIS | Tax delinquency, permits, zoning | Enrichment layer (ongoing) |
+
+### Property count by city
+
+| City | Scored Properties |
+|------|-------------------:|
+| Columbus | 184 |
+| Cincinnati | 200 |
+| Toledo | 200 |
+| Dayton | 200 |
+| Cleveland | 256 |
+| **Total** | **1,040** |
 
 ## Tools
 
 | Tool | What It Returns | Price |
 |------|-----------------|-------|
 | `refinery_health` | API status + cached property count | Free |
-| `refinery_cache_stats` | Cache freshness + neighborhood count | Free |
+| `refinery_cache_stats` | Cache freshness + city/neighborhood count | Free |
 | `refinery_credits` | ZillAPI credit balance | Free |
-| `refinery_search_properties` | Property search results with scores | $0.50 |
+| `refinery_search_properties` | Property search results with scores (multi-city) | $0.50 |
 | `refinery_list_properties` | All cached properties with flip/wholesale/rental scores | $0.35 |
 | `refinery_get_property` | Full property detail by ZPID | $0.35 |
 | `refinery_get_price_history` | Price history for a property | $0.25 |
