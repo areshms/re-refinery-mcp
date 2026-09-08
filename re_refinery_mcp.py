@@ -380,10 +380,11 @@ class PropertySubresourceInput(BaseModel):
     },
 )
 async def refinery_health(params: HealthInput) -> str:
-    """Check the RE Data Refinery API health and cache status.
+    """Check the RE Data Refinery API health, cache status, and rate limits.
 
-    Returns status, cached property count, and rate limit information.
-    This is a free endpoint and does not require x402 payment.
+    Behavior: read-only, idempotent, no side effects. No authentication or payment
+    required. The underlying API is rate-limited (see response for the current RPM
+    cap). Use this tool first to verify connectivity before invoking paid tools.
     """
     data = await _api_get("/health")
     if params.response_format == ResponseFormat.JSON:
@@ -415,8 +416,10 @@ async def refinery_health(params: HealthInput) -> str:
 async def refinery_cache_stats(params: CacheStatsInput) -> str:
     """Get cache statistics for the Refinery data store.
 
-    Returns total cached properties, last update time, and agent-funded count.
-    Free endpoint.
+    Behavior: read-only, idempotent, no side effects. No authentication or payment
+    required. Returns total cached properties, last update time, agent-funded count,
+    and neighborhood coverage. Useful for deciding whether to use cached (free) or
+    live (paid) data sources.
     """
     data = await _api_get("/cache/stats")
     if params.response_format == ResponseFormat.JSON:
@@ -444,7 +447,9 @@ async def refinery_cache_stats(params: CacheStatsInput) -> str:
 async def refinery_credits(params: CreditsInput) -> str:
     """Check remaining ZillAPI credit balance.
 
-    Free endpoint that returns the upstream ZillAPI credit balance.
+    Behavior: read-only, idempotent, no side effects. No authentication or payment
+    required. Returns the upstream ZillAPI credit balance and grants for the current
+    cycle. Low balances may cause live-data tools to return cached or partial data.
     """
     data = await _api_get("/credits")
     if params.response_format == ResponseFormat.JSON:
@@ -470,10 +475,14 @@ async def refinery_credits(params: CreditsInput) -> str:
     },
 )
 async def refinery_search_properties(params: SearchPropertiesInput) -> str:
-    """Search for scored Columbus, OH properties using natural language terms.
+    """Search for scored Columbus, OH properties using natural-language terms.
 
-    This is a paid lookup ($0.50 via x402) unless REFINERY_ENABLE_X402=false.
-    Results are written through to the Refinery cache.
+    Cost: paid lookup ($0.50 per call) charged via x402 USDC on Base when
+    REFINERY_ENABLE_X402=true (default). Set REFINERY_ENABLE_X402=false to query
+    the free local API (cached results only). Auth: requires EVM_PRIVATE_KEY to
+    sign x402 payments; without it, paid calls return 402 Payment Required.
+    Behavior: non-destructive but not idempotent — results may update the Refinery
+    cache. Rate-limited by the upstream API; repeated calls may hit 429.
     """
     data = await _api_get("/search", params={"q": params.query, "limit": params.limit})
     return _format_properties(data, params.response_format)
@@ -492,8 +501,11 @@ async def refinery_search_properties(params: SearchPropertiesInput) -> str:
 async def refinery_list_properties(params: ListPropertiesInput) -> str:
     """List scored properties by city with optional price filtering.
 
-    Set live=true (default) to query ZillAPI live data ($0.35 via x402).
-    Set live=false to read cached data only (free, no payment required).
+    Cost: live=true (default) queries ZillAPI in real time and costs $0.35 per call
+    via x402 USDC on Base when REFINERY_ENABLE_X402=true. Set live=false to read
+    cached data only (free, no payment). Auth: requires EVM_PRIVATE_KEY for paid
+    live lookups. Behavior: non-destructive but not idempotent — live queries may
+    refresh the cache. Rate-limited by the upstream API.
     """
     query: Dict[str, Any] = {"city": params.city, "limit": params.limit}
     if params.min_price is not None:
@@ -524,8 +536,11 @@ async def refinery_list_properties(params: ListPropertiesInput) -> str:
 async def refinery_get_property(params: PropertyDetailInput) -> str:
     """Get full scored details for a single property by ZPID.
 
-    This is a paid lookup ($0.35 via x402) unless REFINERY_ENABLE_X402=false.
-    Includes price/tax/school enrichment and Refinery scores.
+    Cost: paid lookup ($0.35 per call) charged via x402 USDC on Base when
+    REFINERY_ENABLE_X402=true (default). Set REFINERY_ENABLE_X402=false to use
+    the free local API (cached data only). Auth: requires EVM_PRIVATE_KEY to sign
+    x402 payments. Behavior: non-destructive but not idempotent — may enrich and
+    refresh the Refinery cache with price, tax, and school data.
     """
     data = await _api_get(f"/properties/{params.zpid}")
     if params.response_format == ResponseFormat.JSON:
@@ -546,7 +561,11 @@ async def refinery_get_property(params: PropertyDetailInput) -> str:
 async def refinery_get_price_history(params: PropertySubresourceInput) -> str:
     """Get the price-history timeline for a property by ZPID.
 
-    Paid lookup ($0.25 via x402) unless REFINERY_ENABLE_X402=false.
+    Cost: paid lookup ($0.25 per call) charged via x402 USDC on Base when
+    REFINERY_ENABLE_X402=true (default). Set REFINERY_ENABLE_X402=false to use
+    cached history from the free local API. Auth: requires EVM_PRIVATE_KEY.
+    Behavior: read-only for the caller; may refresh the cache on the backend.
+    Rate-limited by the upstream API.
     """
     data = await _api_get(f"/properties/{params.zpid}/price-history")
     if params.response_format == ResponseFormat.JSON:
@@ -575,7 +594,11 @@ async def refinery_get_price_history(params: PropertySubresourceInput) -> str:
 async def refinery_get_tax_history(params: PropertySubresourceInput) -> str:
     """Get the tax/assessment history for a property by ZPID.
 
-    Paid lookup ($0.25 via x402) unless REFINERY_ENABLE_X402=false.
+    Cost: paid lookup ($0.25 per call) charged via x402 USDC on Base when
+    REFINERY_ENABLE_X402=true (default). Set REFINERY_ENABLE_X402=false to use
+    cached tax history from the free local API. Auth: requires EVM_PRIVATE_KEY.
+    Behavior: read-only for the caller; may refresh the cache on the backend.
+    Rate-limited by the upstream API.
     """
     data = await _api_get(f"/properties/{params.zpid}/tax-history")
     if params.response_format == ResponseFormat.JSON:
@@ -602,9 +625,13 @@ async def refinery_get_tax_history(params: PropertySubresourceInput) -> str:
     },
 )
 async def refinery_get_schools(params: PropertySubresourceInput) -> str:
-    """Get the school ratings near a property by ZPID.
+    """Get school ratings near a property by ZPID.
 
-    Paid lookup ($0.25 via x402) unless REFINERY_ENABLE_X402=false.
+    Cost: paid lookup ($0.25 per call) charged via x402 USDC on Base when
+    REFINERY_ENABLE_X402=true (default). Set REFINERY_ENABLE_X402=false to use
+    cached school data from the free local API. Auth: requires EVM_PRIVATE_KEY.
+    Behavior: read-only for the caller; may refresh the cache on the backend.
+    Rate-limited by the upstream API.
     """
     data = await _api_get(f"/properties/{params.zpid}/schools")
     if params.response_format == ResponseFormat.JSON:
@@ -643,10 +670,13 @@ class AuctionSearchInput(BaseModel):
 async def refinery_search_foreclosures(params: AuctionSearchInput) -> str:
     """Search Franklin County, OH foreclosure auction listings.
 
-    Returns properties with auction date, address, city, ZIP, status (Sold/Canceled/Active),
-    price, and lot size. Data sourced from PropertyOnion and refreshed daily.
+    Returns properties with auction date, address, city, ZIP, status
+    (Sold/Canceled/Active/Pending/Upcoming), price, and lot size. Data is sourced
+    from PropertyOnion and refreshed daily.
 
-    Paid lookup ($0.15 via x402) unless REFINERY_ENABLE_X402=false.
+    Cost: paid lookup ($0.15 per call) charged via x402 USDC on Base when
+    REFINERY_ENABLE_X402=true (default). Auth: requires EVM_PRIVATE_KEY.
+    Behavior: read-only and idempotent. Rate-limited by the upstream API.
     """
     query = {k: v for k, v in {"status": params.status, "city": params.city, "zip": params.zip, "type": params.type}.items() if v}
     data = await _api_get("/foreclosures", params=query)
@@ -675,10 +705,13 @@ async def refinery_search_foreclosures(params: AuctionSearchInput) -> str:
 async def refinery_search_tax_sales(params: AuctionSearchInput) -> str:
     """Search Franklin County, OH tax sale auction listings.
 
-    Returns properties with auction date, address, city, ZIP, status, price, and lot size.
-    Data sourced from PropertyOnion and refreshed daily.
+    Returns properties with auction date, address, city, ZIP, status
+    (Sold/Canceled/Active/Pending/Upcoming), price, and lot size. Data is sourced
+    from PropertyOnion and refreshed daily.
 
-    Paid lookup ($0.15 via x402) unless REFINERY_ENABLE_X402=false.
+    Cost: paid lookup ($0.15 per call) charged via x402 USDC on Base when
+    REFINERY_ENABLE_X402=true (default). Auth: requires EVM_PRIVATE_KEY.
+    Behavior: read-only and idempotent. Rate-limited by the upstream API.
     """
     query = {k: v for k, v in {"status": params.status, "city": params.city, "zip": params.zip, "type": params.type}.items() if v}
     data = await _api_get("/tax-sales", params=query)
@@ -705,12 +738,15 @@ async def refinery_search_tax_sales(params: AuctionSearchInput) -> str:
     },
 )
 async def refinery_search_auctions(params: AuctionSearchInput) -> str:
-    """Search all Franklin County, OH auction listings (foreclosures + tax sales combined).
+    """Search all Franklin County, OH auction listings (foreclosures + tax sales).
 
-    Returns properties with auction date, address, city, ZIP, status, price, lot size, and type.
-    Data sourced from PropertyOnion and refreshed daily.
+    Returns combined foreclosure and tax-sale properties with auction date,
+    address, city, ZIP, status (Sold/Canceled/Active/Pending/Upcoming), price, lot
+    size, and listing type. Data is sourced from PropertyOnion and refreshed daily.
 
-    Paid lookup ($0.25 via x402) unless REFINERY_ENABLE_X402=false.
+    Cost: paid lookup ($0.25 per call) charged via x402 USDC on Base when
+    REFINERY_ENABLE_X402=true (default). Auth: requires EVM_PRIVATE_KEY.
+    Behavior: read-only and idempotent. Rate-limited by the upstream API.
     """
     query = {k: v for k, v in {"status": params.status, "city": params.city, "zip": params.zip, "type": params.type}.items() if v}
     data = await _api_get("/auctions", params=query)
@@ -740,7 +776,13 @@ async def refinery_search_auctions(params: AuctionSearchInput) -> str:
     },
 )
 async def refinery_payment_status() -> str:
-    """Show whether x402 automatic payments are configured and the active API base URL."""
+    """Show whether x402 automatic payments are configured.
+
+    Behavior: read-only, idempotent, no side effects. No payment required.
+    Returns whether REFINERY_ENABLE_X402 is enabled, whether EVM_PRIVATE_KEY is set,
+    the active API base URL, and the X402_SPEND_CAP. Use this before invoking paid
+    tools to confirm payments will succeed.
+    """
     status = {
         "x402_enabled": ENABLE_X402,
         "payment_client_enabled": PAYMENT.enabled,
