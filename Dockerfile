@@ -9,9 +9,10 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY pyproject.toml uv.lock ./
 COPY re_refinery_mcp.py ./
 COPY README.md ./
+COPY requirements.txt ./
 
-# Install dependencies (no playwright/chromium needed — scrapling fetchers
-# are only used for local scraping scripts, not the MCP server itself)
+# Install dependencies — lightweight (httpx, mcp, python-dotenv, x402)
+# No Playwright/Chromium needed; the MCP server only makes HTTP calls
 RUN uv sync --no-dev --no-install-project
 
 # Default to stdio transport
