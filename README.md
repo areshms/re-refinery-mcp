@@ -37,21 +37,21 @@ All paid lookups use the **x402 protocol** — agents send USDC micropayments on
 
 ## Tools
 
-| Tool | What It Returns | Price |
-|------|-----------------|-------|
-| `refinery_health` | API status + cached property count | Free |
-| `refinery_cache_stats` | Cache freshness + city/neighborhood count | Free |
-| `refinery_credits` | ZillAPI credit balance | Free |
-| `refinery_search_properties` | Property search results with scores (multi-city) | $0.50 |
-| `refinery_list_properties` | All cached properties with flip/wholesale/rental scores | $0.35 |
-| `refinery_get_property` | Full property detail by ZPID | $0.35 |
-| `refinery_get_price_history` | Price history for a property | $0.25 |
-| `refinery_get_tax_history` | Tax/assessment history for a property | $0.25 |
-| `refinery_get_schools` | School ratings near a property | $0.25 |
-| `refinery_search_foreclosures` | 192 foreclosure auction listings | $0.15 |
-| `refinery_search_tax_sales` | 161 tax sale auction listings | $0.15 |
-| `refinery_search_auctions` | All 353 auction listings combined | $0.25 |
-| `refinery_payment_status` | x402 payment configuration status | Free |
+| Tool | Description |
+|------|-------------|
+| `refinery_health` | API status + cached property count (free) |
+| `refinery_cache_stats` | Cache freshness + city/neighborhood count (free) |
+| `refinery_credits` | ZillAPI credit balance (free) |
+| `refinery_payment_status` | x402 payment configuration status (free) |
+| `refinery_search_properties` | Property search results with scores (multi-city). $0.50 per call |
+| `refinery_list_properties` | All cached properties with flip/wholesale/rental scores. $0.35 per call |
+| `refinery_get_property` | Full property detail by ZPID. $0.35 per call |
+| `refinery_get_price_history` | Price history for a property. $0.25 per call |
+| `refinery_get_tax_history` | Tax/assessment history for a property. $0.25 per call |
+| `refinery_get_schools` | School ratings near a property. $0.25 per call |
+| `refinery_search_foreclosures` | 192 foreclosure auction listings. $0.15 per call |
+| `refinery_search_tax_sales` | 161 tax sale auction listings. $0.15 per call |
+| `refinery_search_auctions` | All 353 auction listings combined. $0.25 per call |
 
 ## Setup
 
