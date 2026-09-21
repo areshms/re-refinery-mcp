@@ -1,5 +1,7 @@
 # RE Data Refinery MCP Server
 
+[![Model Context Protocol](https://img.shields.io/badge/Protocol-MCP-blue)](https://modelcontextprotocol.io)
+
 An MCP (Model Context Protocol) server that gives AI agents real-time access to scored real estate investment data across five major Ohio cities — Columbus, Cincinnati, Toledo, Dayton, and Cleveland — including property listings, flip/wholesale scores, rental yields, foreclosure auctions, and tax sale listings. Agents query the data through MCP tools and pay per lookup using x402 micropayments (USDC on Base mainnet).
 
 ## What It Does
