@@ -315,7 +315,10 @@ class ListPropertiesInput(BaseModel):
     """Input for refinery_list_properties."""
 
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
-    city: str = Field(default="Columbus", description="City to filter by (default: Columbus).")
+    city: str = Field(
+        default="Columbus",
+        description="City to filter by. Supported: Columbus, Cincinnati, Toledo, Dayton, Cleveland.",
+    )
     min_price: Optional[int] = Field(
         default=None, ge=0, description="Minimum price filter."
     )
@@ -501,11 +504,12 @@ async def refinery_search_properties(params: SearchPropertiesInput) -> str:
 async def refinery_list_properties(params: ListPropertiesInput) -> str:
     """List scored properties by city with optional price filtering.
 
-    Cost: live=true (default) queries ZillAPI in real time and costs $0.35 per call
-    via x402 USDC on Base when REFINERY_ENABLE_X402=true. Set live=false to read
-    cached data only (free, no payment). Auth: requires EVM_PRIVATE_KEY for paid
-    live lookups. Behavior: non-destructive but not idempotent — live queries may
-    refresh the cache. Rate-limited by the upstream API.
+    Supports Columbus, Cincinnati, Toledo, Dayton, and Cleveland. Use live=false
+    to read cached data for free; live=true (default) queries ZillAPI in real time
+    and costs $0.35 per call via x402 USDC on Base when REFINERY_ENABLE_X402=true.
+    Auth: requires EVM_PRIVATE_KEY for paid live lookups. Behavior: non-destructive
+    but not idempotent — live queries may refresh the cache. Rate-limited by the
+    upstream API.
     """
     query: Dict[str, Any] = {"city": params.city, "limit": params.limit}
     if params.min_price is not None:
