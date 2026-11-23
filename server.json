@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.areshms/re-refinery-mcp",
+  "title": "RE Data Refinery",
+  "description": "Scored Ohio real-estate lead data: search, foreclosures, tax sales, cash buyers, verdicts. x402 per-call.",
+  "repository": {
+    "url": "https://github.com/areshms/re-refinery-mcp",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "packages": [
+    {
+      "registry_type": "oci",
+      "identifier": "ghcr.io/areshms/re-refinery-mcp",
+      "version": "1.0.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
